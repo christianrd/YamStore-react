@@ -4,6 +4,7 @@ import { Box, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContain
 import { useState } from "react";
 import agent from "../../app/Api/agent";
 import { useStoreContext } from "../../app/context/StoreContext";
+import { currencyFormat } from "../../app/util/util";
 import BasketSummary from "./BasketSummary";
 
 export default function BasketPage() {
@@ -56,7 +57,7 @@ export default function BasketPage() {
                                         <span>{item.name}</span>
                                     </Box>
                                 </TableCell>
-                                <TableCell align="right">${(item.price / 100).toFixed(2)}</TableCell>
+                                <TableCell align="right">{currencyFormat(item.price)}</TableCell>
                                 <TableCell align="right">
                                     <LoadingButton
                                         loading={status.loading && status.name === 'rem' + item.productId}

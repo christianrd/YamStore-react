@@ -10,7 +10,7 @@ import { Product } from "../../app/models/Product";
 import { currencyFormat } from "../../app/util/util";
 
 export default function ProductDetails() {
-    const {basket} = useStoreContext();
+    const {basket, setBasket, removeItem} = useStoreContext();
     const { id } = useParams<{ id: string }>();
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -25,6 +25,29 @@ export default function ProductDetails() {
             .catch(error => console.log(error))
             .finally(() => setLoading(false));
     }, [id, item])
+
+    function handleInputChange(event: any) {
+        if (event.target.value >= 0 ){
+            setQuantity(event.target.value);
+        }
+    }
+
+    function handleUpdateCart() {
+        setSubmitting(true);
+        if (!item || quantity > item.quantity) {
+            const updateQuantity = item ? quantity - item.quantity : quantity;
+            agent.Basket.addItem(product?.id!, updateQuantity)
+                .then(basket => setBasket(basket))
+                .catch(error => console.log(error))
+                .finally(() => setSubmitting(false))
+        } else {
+            const updateQuantity = item.quantity - quantity;
+            agent.Basket.removeItem(product?.id!, updateQuantity)
+                .then(() => removeItem(product?.id!, updateQuantity))
+                .catch(error => console.log(error))
+                .finally(() => setSubmitting(false))
+        }
+    }
 
     if(loading) return <LoadingComponent message="Loading product..."/>
     if (!product) return <NotFound />
@@ -67,6 +90,7 @@ export default function ProductDetails() {
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
                         <TextField 
+                            onChange={handleInputChange}
                             variant="outlined"
                             type="number"
                             label="Quantity in Cart"
@@ -76,6 +100,9 @@ export default function ProductDetails() {
                     </Grid>
                     <Grid item xs={6}>
                         <LoadingButton
+                            disabled={item?.quantity === quantity || !item && quantity === 0}
+                            loading={submitting}
+                            onClick={handleUpdateCart}
                             sx={{height: "55px"}}
                             color="primary"
                             size="large"
